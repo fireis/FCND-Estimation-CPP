@@ -20,7 +20,7 @@ This project will continue to use the C++ development environment you set up in 
  ```
 
  2. Import the code into your IDE like done in the [Controls C++ project](https://github.com/udacity/FCND-Controls-CPP#development-environment-setup)
- 
+
  3. You should now be able to compile and run the estimation simulator just as you did in the controls project
 
 
@@ -93,7 +93,12 @@ For the controls project, the simulator was working with a perfect set of sensor
 
 NOTE: Your answer should match the settings in `SimulatedSensors.txt`, where you can also grab the simulated noise parameters for all the other sensors.
 
+**Student Note:** I've calculated the standard deviations as required, obtaining 0.74 for MeasuredStdDev_GPSPosXY and 0.51 for MeasuredStdDev_AccelXY = .51, achieving passing results as follows:
 
+```
+PASS: ABS(Quad.GPS.X-Quad.Pos.X) was less than MeasuredStdDev_GPSPosXY for 69% of the time
+PASS: ABS(Quad.IMU.AX-0.000000) was less than MeasuredStdDev_AccelXY for 70% of the time
+```
 ### Step 2: Attitude Estimation ###
 
 Now let's look at the first step to our state estimation: including information from our IMU.  In this step, you will be improving the complementary filter-type attitude filter with a better rate gyro attitude integration scheme.
@@ -113,6 +118,7 @@ In the screenshot above the attitude estimation using linear scheme (left) and u
 
 **Hint: see section 7.1.2 of [Estimation for Quadrotors](https://www.overleaf.com/read/vymfngphcccj) for a refresher on a good non-linear complimentary filter for attitude using quaternions.**
 
+**Student Note: **In this section, I used the FromEuler123_RPY and IntegrateBodyRate from the Quaternion to implement qt_bar as described on section 7.1.2.
 
 ### Step 3: Prediction Step ###
 
@@ -124,6 +130,9 @@ In this next step you will be implementing the prediction step of your filter.
 2. In `QuadEstimatorEKF.cpp`, implement the state prediction step in the `PredictState()` functon. If you do it correctly, when you run scenario `08_PredictState` you should see the estimator state track the actual state, with only reasonably slow drift, as shown in the figure below:
 
 ![predict drift](images/predict-slow-drift.png)
+
+** Studente Note:** To make the prediction, I've used a simplistic integration by just multiplying over time.
+
 
 3. Now let's introduce a realistic IMU, one with noise.  Run scenario `09_PredictionCov`. You will see a small fleet of quadcopter all using your prediction code to integrate forward. You will see two plots:
    - The top graph shows 10 (prediction-only) position X estimates
@@ -137,6 +146,8 @@ You will notice however that the estimated covariance (white bounds) currently d
 **Hint: When it comes to writing the function for GetRbgPrime, make sure to triple check you've set all the correct parts of the matrix.**
 
 **Hint: recall that the control input is the acceleration!**
+
+** Student Note:**In this task, I've implemented the matrix definition shown on equation 52 of Estimation for Quadrotors
 
 5. Run your covariance prediction and tune the `QPosXYStd` and the `QVelXYStd` process parameters in `QuadEstimatorEKF.txt` to try to capture the magnitude of the error you see. Note that as error grows our simplified model will not capture the real error dynamics (for example, specifically, coming from attitude errors), therefore  try to make it look reasonable only for a relatively short prediction period (the scenario is set for one second).  A good solution looks as follows:
 
@@ -177,6 +188,8 @@ Up until now we've only used the accelerometer and gyro for our state estimation
 
 **Hint: see section 7.3.2 of [Estimation for Quadrotors](https://www.overleaf.com/read/vymfngphcccj) for a refresher on the magnetometer update.**
 
+**Student Note** Since this is linear, the derivative is a sparse matrix as shown on the handbook. Also, to update the yaw, we first get the difference between measured and estimated yaw and then update the yaw with the appropriate way around the circle
+
 
 ### Step 5: Closed Loop + GPS Update ###
 
@@ -199,6 +212,9 @@ Up until now we've only used the accelerometer and gyro for our state estimation
 ***Success criteria:*** *Your objective is to complete the entire simulation cycle with estimated position error of < 1m.*
 
 **Hint: see section 7.3.1 of [Estimation for Quadrotors](https://www.overleaf.com/read/vymfngphcccj) for a refresher on the GPS update.**
+
+**Student Note:** In this update we want to assure that only the main diagonal from hPrime is 1 and zFromX is updated with efkState.
+
 
 At this point, congratulations on having a working estimator!
 
